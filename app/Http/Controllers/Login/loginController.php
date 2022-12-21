@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Login;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use DB;
+use Ramsey\Uuid\Uuid;
 class loginController extends Controller
 {
     public function objeto_a_array($data){
@@ -71,10 +72,56 @@ class loginController extends Controller
     public function geta(Request $request){
         return response()->json(($sql));
     }
-public function getc(Request $request){
     
+    public function posRegistro(Request $request){ 
+        $datass = (isset($request['haders']) && $request['haders'] != "" ? "" . (trim($request['haders'])) . "" : "" );           
+        if ($datass=="Ox_mSak@t~r}uh_GoerfQly_=EM$4iIYk#v4oFguL)TY2b0~O[") {
+            DB::beginTransaction();
+            try {
+            if (is_array($request['datos']) || is_object($request['datos'])){
+                $result = array();
+                foreach ($request['datos'] as $key => $value){
+                    $result[$key] = $this->objeto_a_array($value);
+                }
+                $result; 
+            }
+            $exito = 1;
+            $uuid = Uuid::uuid4();
+            $uuid2 = (isset($uuid)&&$uuid!="" ? "'".(trim($uuid))."'":   "NULL");
+            $tNombre = (isset($result['tNombre'])&&$result['tNombre']!="" ? "'".(trim($result['tNombre']))."'":   "NULL");
+            $tApellido = (isset($result['tApellido'])&&$result['tApellido']!="" ? "'".(trim($result['tApellido']))."'":   "NULL");
+            $fhNacimiento = (isset($result['fhNacimiento'])&&$result['fhNacimiento']!="" ? "'".(trim($result['fhNacimiento']))."'":   "NULL");
+            $Email    = (isset($result['Email']) && $result['Email'] != "" ? "'" . (trim($result['Email'])) . "'" : "");           
+            $password    = (isset($result['password']) && $result['password'] != "" ? "'" . (trim($result['password'])) . "'" : "");  
+            $EcodEstatus = 1;
 
-    $sql = "c";
-    return response()->json(($sql));
-}
+            $insert=" CALL `stpInsertarUsuarioLogin`(".$fhNacimiento.",".$tNombre.",".$tApellido.",".$EcodEstatus.",".$uuid2.",".$Email.",".$password.")";
+            $response = DB::select($insert);
+
+            $insertMails =" CALL `stpInsertarBitCorreoLogin`(".$Email.",".$password.")";
+            $responseincerMails = DB::select($insertMails);
+
+            $codigoCoreeo = (isset($responseincerMails[0]->Codigo)&& $responseincerMails[0]->Codigo>0  ? (int)$responseincerMails[0]->Codigo : "NULL");
+           
+            $incerrelucerCorreo=" CALL `stpInsertarRelusUarioCorreo`(".$uuid2.",".$codigoCoreeo.")";
+            $responsincerrelucerCorreo = DB::select($incerrelucerCorreo);
+            $codigoRelCoreeo = (isset($responsincerrelucerCorreo[0]->Codigo)&& $responsincerrelucerCorreo[0]->Codigo>0  ? (int)$responsincerrelucerCorreo[0]->Codigo : "NULL"); 
+            
+            if (!$codigoRelCoreeo) {
+                $exito = 0;
+            }
+            
+          
+            if ($exito == 0) {
+                DB::rollback();
+            } else {
+                DB::commit();
+            }
+        } catch (Exception $e) {
+            DB::rollback();
+            $exito = $e->getMessage();
+        }
+         return response()->json(['exito' => $exito]);
+        }
+    }
 }

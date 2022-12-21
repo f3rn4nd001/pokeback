@@ -23,6 +23,7 @@ Logins -------------------
 */
 Route::post('Login', [loginController::class,'posLogin']);
 Route::post('getMenu', [menuSubmenuControPermisos::class,'getMenu']);
+Route::post('Registro', [loginController::class,'posRegistro']);
 
 
 
